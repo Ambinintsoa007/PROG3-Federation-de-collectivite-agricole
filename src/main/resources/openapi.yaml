@@ -4,7 +4,7 @@ info:
   description: >
     Cette API permet de digitaliser les processus administratifs de la féderations agricoles à Madagascar. 
     Elle facilite la mise en relation entre les agriculteurs et les exportateurs.
-  version: 1.0.1
+  version: 1.0.0
 
 tags:
   - name: Collectivités
@@ -16,3 +16,50 @@ tags:
   - name: Activités
     description: Planification et suivi de l'assiduité aux assemblés et formations.
 
+paths:
+  /collectivites:
+    post:
+      tags:
+        - Collectivités
+      summary: Créer une nouvelle collectivités.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreationCollectivite'
+      responses:
+        '201':
+          description: Collectivité créé avec succès.
+        '400':
+          description: Conditions non remplis.
+
+components:
+  schemas:
+    CreationCollectivite:
+      type: object
+      required: [nom, numero, ville, specialite, membresFondateurs,responsableIds]
+      properties:
+        nom:
+          type: string
+        numero:
+          type: string
+        ville:
+          type: string
+        specialite:
+          type: string
+        membresFondateurs:
+          type: array
+          items:
+            type: string
+          minItems: 10
+          description: Liste des 10 membres minimum
+        responsableIds:
+          type: object
+          properties:
+            president:
+              type: string
+            tresorier:
+              type: string
+            secretaire:
+              type: string
