@@ -1,0 +1,18 @@
+openapi: 3.0.3
+info:
+  title: Federation Agricole API
+  description: >
+    Cette API permet de digitaliser les processus administratifs de la féderations agricoles à Madagascar. 
+    Elle facilite la mise en relation entre les agriculteurs et les exportateurs.
+  version: 1.0.1
+
+tags:
+  - name: Collectivités
+    description: Gestion de l'ouverture et des statistiques des collectivités agricoles.
+  - name: Membres
+    description: Gestions des adhésion, des parrainages et des profiles.
+  - name: Trésorerie
+    description: Suivi des cotisations, des paiements et des comptes bancaires/mobiles.
+  - name: Activités
+    description: Planification et suivi de l'assiduité aux assemblés et formations.
+
