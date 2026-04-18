@@ -34,13 +34,13 @@ paths:
         '400':
           description: "Conditions non remplis."
 
-  /collectivites/{collectivitesId}/membres:
+  /collectivites/{collectiviteId}/membres:
     post:
       tags:
         - Membres
       summary: Admettre un nouveau membre dans un collectivité bien définit.
       parameters:
-        - name: collectivitesId
+        - name: collectiviteId
           in: path
           required: true
           description: "ID de la collectivité que le membre souhaite rejoindre"
@@ -57,6 +57,30 @@ paths:
           description: "Nouveau ajouté avec succès"
         '400':
           description: "Information manquant ! (Parrain invalide, paiement manquant, etc..)"
+
+  /membres/{idMembre}/cotisations:
+    post:
+      tags:
+        - Trésorerie
+      summary: Enregistrement de la cotisations d'un membres.
+      parameters:
+        - name: idMembre
+          in: path
+          required: true
+          description: ID du membre qui va cotiser.
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Cotisation'
+      responses:
+        '201':
+          description: "Cotisation créé avec succès"
+        '400':
+          description: "Erreur d'information (id, montant, type de paiement,... manquant)"
 
 components:
   schemas:
@@ -117,3 +141,18 @@ components:
         referencePaiement:
           type: string
           description: "Références du paiements des 50.000 ariary"
+    Cotisation:
+      type: object
+      required: [typeCotisation, montant, datePaiement, modePaiement]
+      properties:
+        typeCotisation:
+          type: string
+          enum: [MENSUELLE, ANNUELLE]
+        montant:
+          type: integer
+        datePaiement:
+          type: string
+          format: date
+        modePaiement:
+          type: string
+          enum: [ESPECE, MOBILE_MONEY, VIREMENT]
