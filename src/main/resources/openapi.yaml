@@ -82,6 +82,30 @@ paths:
         '400':
           description: "Erreur d'information (id, montant, type de paiement,... manquant)"
 
+  /collectivites/{collectiviteId}/comptes:
+    post:
+      tags:
+        - Trésorerie
+      summary: "Ajout d'un compte (Caisse, Bancaire ou Mobile) à une collectivité."
+      parameters:
+        - name: collectiviteId
+          in: path
+          required: true
+          description: "ID du collectivités à qui on va ajouter un compte."
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Compte'
+      responses:
+        '201':
+          description: "Compte créé avec succès"
+        '400':
+          description: "Information manquante !"
+
 components:
   schemas:
     CreationCollectivite:
@@ -156,3 +180,40 @@ components:
         modePaiement:
           type: string
           enum: [ESPECE, MOBILE_MONEY, VIREMENT]
+    Compte:
+      type: object
+      required: [typeCompte, solde, dateDernierSolde]
+      properties:
+        typeCompte:
+          type: string
+          enum: [CAISSE, BANCAIRE, MOBILE_MONEY]
+        solde:
+          type: integer
+        dateDernierSolde:
+          type: string
+          format: date
+
+        compteBancaire:
+          type: object
+          required: [nomTitulaire, banque, numeroCompte]
+          properties:
+            nomTitulaire:
+              type: string
+            banque:
+              type: string
+              enum: [BRED, MCB, BMOI, BOA, BGFI, AFG, ACCES_BANQUE, BAOBAB, SIPEM]
+            numeroCompte:
+              type: string
+              maxLength: 23
+              minLength: 23
+        compteMobile:
+          type: object
+          required: [nomTitulaire, operateur, numero]
+          properties:
+            nomTitulaire:
+              type: string
+            operateur:
+              type: string
+              enum: [ORANGE_MONEY, MVOLA, AIRTEL_MONEY]
+            numero:
+              type: string
