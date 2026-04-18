@@ -8,13 +8,13 @@ info:
 
 tags:
   - name: Collectivités
-    description: Gestion de l'ouverture et des statistiques des collectivités agricoles.
+    description: "Gestion de l'ouverture et des statistiques des collectivités agricoles."
   - name: Membres
-    description: Gestions des adhésion, des parrainages et des profiles.
+    description: "Gestions des adhésion, des parrainages et des profiles."
   - name: Trésorerie
-    description: Suivi des cotisations, des paiements et des comptes bancaires/mobiles.
+    description: "Suivi des cotisations, des paiements et des comptes bancaires/mobiles."
   - name: Activités
-    description: Planification et suivi de l'assiduité aux assemblés et formations.
+    description: "Planification et suivi de l'assiduité aux assemblés et formations."
 
 paths:
   /collectivites:
@@ -30,9 +30,33 @@ paths:
               $ref: '#/components/schemas/CreationCollectivite'
       responses:
         '201':
-          description: Collectivité créé avec succès.
+          description: "Collectivité créé avec succès."
         '400':
-          description: Conditions non remplis.
+          description: "Conditions non remplis."
+
+  /collectivites/{collectivitesId}/membres:
+    post:
+      tags:
+        - Membres
+      summary: Admettre un nouveau membre dans un collectivité bien définit.
+      parameters:
+        - name: collectivitesId
+          in: path
+          required: true
+          description: "ID de la collectivité que le membre souhaite rejoindre"
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/NouveauMembre'
+      responses:
+        '201':
+          description: "Nouveau ajouté avec succès"
+        '400':
+          description: "Information manquant ! (Parrain invalide, paiement manquant, etc..)"
 
 components:
   schemas:
@@ -53,9 +77,10 @@ components:
           items:
             type: string
           minItems: 10
-          description: Liste des 10 membres minimum
+          description: "Liste des 10 membres minimum"
         responsableIds:
           type: object
+          required: [president, tresorier, secretaire]
           properties:
             president:
               type: string
@@ -63,3 +88,32 @@ components:
               type: string
             secretaire:
               type: string
+    NouveauMembre:
+      type: object
+      required: [nom, prenoms, dateNaissance, genre, adresse, metier, telephone, email, parrainId, referencePaiement]
+      properties:
+        nom:
+          type: string
+        prenoms:
+          type: string
+        dateNaissance:
+          type: string
+          format: date
+        genre:
+          type: string
+          enum: [MASCULIN, FEMININ]
+        adresse:
+          type: string
+        metier:
+          type: string
+        telephone:
+          type: string
+        email:
+          type: string
+          format: email
+        parrainId:
+          type: string
+          description: "ID du parrain (membre confirmé, ancienneté > 90 jours)"
+        referencePaiement:
+          type: string
+          description: "Références du paiements des 50.000 ariary"
