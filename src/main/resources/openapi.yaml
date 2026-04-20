@@ -106,6 +106,103 @@ paths:
         '400':
           description: "Information manquante !"
 
+  /collectivites/{collectiviteId}/activites:
+    post:
+      tags:
+        - Activités
+      summary: Créer une activité pour une collectivité.
+      parameters:
+        - name: collectiviteId
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreationActivite'
+      responses:
+        '201':
+          description: "Activité créée avec succès."
+        '400':
+          description: "Données invalides."
+        '404':
+          description: "Collectivité introuvable."
+
+    get:
+      tags:
+        - Activités
+      summary: Lister les activités d'une collectivité.
+      parameters:
+        - name: collectiviteId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: "Liste des activités retournée avec succès."
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Activite'
+
+    /collectivites/{collectiviteId}/activites/{activiteId}:
+      get:
+        tags:
+          - Activités
+        summary: Détails d'une activité spécifique.
+        parameters:
+          - name: collectiviteId
+            in: path
+            required: true
+            schema:
+              type: string
+          - name: activiteId
+            in: path
+            required: true
+            schema:
+              type: string
+        responses:
+          '200':
+            description: "Détails de l'activité retournés."
+            content:
+              application/json:
+                schema:
+                  $ref: '#/components/schemas/Activite'
+
+    /federation/activites:
+      post:
+        tags:
+          - Activités
+        summary: Créer une activité au niveau de la fédération.
+        requestBody:
+          required: true
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CreationActivite'
+        responses:
+          '201':
+            description: "Activité fédérale créée."
+      get:
+        tags:
+          - Activités
+        summary: Lister les activités de la fédération.
+        responses:
+          '200':
+            description: "Liste des activités fédérales."
+            content:
+              application/json:
+                schema:
+                  type: array
+                  items:
+                    $ref: '#/components/schemas/Activite'
+
 components:
   schemas:
     CreationCollectivite:
@@ -217,3 +314,52 @@ components:
               enum: [ORANGE_MONEY, MVOLA, AIRTEL_MONEY]
             numero:
               type: string
+
+    CreationActivite:
+      type: object
+      required: [ titre, type, date, presenceObligatoire ]
+      properties:
+        titre:
+          type: string
+          example: "Formation sur la gestion des semences"
+        type:
+          type: string
+          enum: [ ASSEMBLEE_GENERALE, FORMATION_JUNIOR, EXCEPTIONNELLE ]
+          description: "Type d'activité selon le règlement de la fédération"
+        date:
+          type: string
+          format: date
+        presenceObligatoire:
+          type: boolean
+          default: false
+        membresVises:
+          type: string
+          description: "Catégorie de membres concernés (ex: riziculteurs, nouveaux adhérents)"
+        collectivitesInvitees:
+          type: array
+          items:
+            type: string
+          description: "Liste des IDs des collectivités invitées (utile pour les activités fédérales)"
+
+    Activite:
+      type: object
+      properties:
+        id:
+          type: string
+          description: "ID unique généré par le système"
+        titre:
+          type: string
+        type:
+          type: string
+          enum: [ ASSEMBLEE_GENERALE, FORMATION_JUNIOR, EXCEPTIONNELLE ]
+        date:
+          type: string
+          format: date
+        presenceObligatoire:
+          type: boolean
+        membresVises:
+          type: string
+        collectivitesInvitees:
+          type: array
+          items:
+            type: string
