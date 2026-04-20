@@ -260,6 +260,73 @@ paths:
                 items:
                   $ref: '#/components/schemas/Presence'
 
+  /collectivites/{collectiviteId}/statistiques/rapport-mensuel:
+    get:
+      tags:
+        - Collectivités
+      summary: Rapport mensuel global d'une collectivité pour la fédération
+      parameters:
+        - name: collectiviteId
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: mois
+          in: query
+          required: true
+          description: "Mois concerné au format YYYY-MM"
+          schema:
+            type: string
+      responses:
+        '200':
+          description: "Rapport mensuel généré avec succès."
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RapportMensuel'
+        '404':
+          description: "Collectivité introuvable."
+
+  /collectivites/{collectiviteId}/membres/{membreId}/statistiques:
+    get:
+      tags:
+        - Collectivités
+      summary: Statistiques détaillées d'un membre actif
+      parameters:
+        - name: collectiviteId
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: membreId
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: dateDebut
+          in: query
+          required: true
+          schema:
+            type: string
+            format: date
+        - name: dateFin
+          in: query
+          required: true
+          schema:
+            type: string
+            format: date
+      responses:
+        '200':
+          description: "Statistiques du membre calculées avec succès."
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StatistiquesMembre'
+        '400':
+          description: "Membre démissionnaire ou données invalides."
+        '404':
+          description: "Membre ou collectivité introuvable."
+
 components:
   schemas:
     CreationCollectivite:
@@ -452,3 +519,48 @@ components:
           type: string
           format: date-time
           description: "Horodatage automatique du pointage"
+
+    RapportMensuel:
+      type: object
+      properties:
+        collectiviteId:
+          type: string
+        mois:
+          type: string
+          example: "2026-04"
+        nombreMembresInscrits:
+          type: integer
+        tauxAssiduiteMoyen:
+          type: number
+          format: float
+          description: "Moyenne des présences de tous les membres sur le mois (%)"
+        totalCotisationsCollectees:
+          type: number
+          description: "Somme totale des cotisations perçues ce mois-ci"
+
+    StatistiquesMembre:
+      type: object
+      properties:
+        membreId:
+          type: string
+        collectiviteId:
+          type: string
+        periode:
+          type: object
+          properties:
+            debut:
+              type: string
+              format: date
+            fin:
+              type: string
+              format: date
+        tauxAssiduite:
+          type: number
+          format: float
+          description: "Pourcentage de présence aux activités obligatoires"
+        montantTotalVerse:
+          type: number
+          description: "Somme de toutes les cotisations payées sur la période"
+        soldeRestantDu:
+          type: number
+          description: "Montant des impayés (cotisations non réglées)"
