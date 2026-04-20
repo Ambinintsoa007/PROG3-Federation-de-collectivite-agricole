@@ -151,57 +151,114 @@ paths:
                 items:
                   $ref: '#/components/schemas/Activite'
 
-    /collectivites/{collectiviteId}/activites/{activiteId}:
-      get:
-        tags:
-          - Activités
-        summary: Détails d'une activité spécifique.
-        parameters:
-          - name: collectiviteId
-            in: path
-            required: true
-            schema:
-              type: string
-          - name: activiteId
-            in: path
-            required: true
-            schema:
-              type: string
-        responses:
-          '200':
-            description: "Détails de l'activité retournés."
-            content:
-              application/json:
-                schema:
-                  $ref: '#/components/schemas/Activite'
-
-    /federation/activites:
-      post:
-        tags:
-          - Activités
-        summary: Créer une activité au niveau de la fédération.
-        requestBody:
+  /collectivites/{collectiviteId}/activites/{activiteId}:
+    get:
+      tags:
+        - Activités
+      summary: Détails d'une activité spécifique.
+      parameters:
+        - name: collectiviteId
+          in: path
           required: true
+          schema:
+            type: string
+        - name: activiteId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: "Détails de l'activité retournés."
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/CreationActivite'
-        responses:
-          '201':
-            description: "Activité fédérale créée."
-      get:
-        tags:
-          - Activités
-        summary: Lister les activités de la fédération.
-        responses:
-          '200':
-            description: "Liste des activités fédérales."
-            content:
-              application/json:
-                schema:
-                  type: array
-                  items:
-                    $ref: '#/components/schemas/Activite'
+                $ref: '#/components/schemas/Activite'
+
+  /federation/activites:
+    post:
+      tags:
+        - Activités
+      summary: Créer une activité au niveau de la fédération.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreationActivite'
+      responses:
+        '201':
+          description: "Activité fédérale créée."
+    get:
+      tags:
+        - Activités
+      summary: Lister les activités de la fédération.
+      responses:
+        '200':
+          description: "Liste des activités fédérales."
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Activite'
+
+  /collectivites/{collectiviteId}/activites/{activiteId}/presences:
+    post:
+      tags:
+        - Activités
+      summary: Enregistrer la feuille de présence d'une activité.
+      parameters:
+        - name: collectiviteId
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: activiteId
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: array
+              items:
+                $ref: '#/components/schemas/CreationPresence'
+      responses:
+        '201':
+          description: "Présences enregistrées avec succès."
+        '400':
+          description: "Données invalides."
+        '404':
+          description: "Activité ou collectivité introuvable."
+
+    get:
+      tags:
+        - Activités
+      summary: Voir la fiche de présence complète d'une activité.
+      parameters:
+        - name: collectiviteId
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: activiteId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: "Fiche de présence retournée avec succès."
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Presence'
 
 components:
   schemas:
@@ -363,3 +420,35 @@ components:
           type: array
           items:
             type: string
+
+    CreationPresence:
+      type: object
+      required: [ membreId, statut ]
+      properties:
+        membreId:
+          type: string
+          example: "MEMB-001"
+        statut:
+          type: string
+          enum: [ PRESENT, ABSENT, EXCUSE ]
+        motifAbsence:
+          type: string
+          description: "Obligatoire si statut est ABSENT ou EXCUSE"
+
+    Presence:
+      type: object
+      properties:
+        id:
+          type: string
+          description: "ID unique de la ligne de présence"
+        membreId:
+          type: string
+        statut:
+          type: string
+          enum: [ PRESENT, ABSENT, EXCUSE ]
+        motifAbsence:
+          type: string
+        datePointage:
+          type: string
+          format: date-time
+          description: "Horodatage automatique du pointage"
