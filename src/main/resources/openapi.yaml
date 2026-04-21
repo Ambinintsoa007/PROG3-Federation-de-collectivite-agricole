@@ -203,6 +203,30 @@ paths:
                 items:
                   $ref: '#/components/schemas/Activite'
 
+  /federation/statistiques/rapport-global:
+    get:
+      tags:
+        - Activités
+      summary: "Rapport global annuel/mensuel de la fédération (Section H)"
+      parameters:
+        - name: dateDebut
+          in: query
+          required: true
+          schema: { type: string, format: date }
+        - name: dateFin
+          in: query
+          required: true
+          schema: { type: string, format: date }
+      responses:
+        '200':
+          description: "Rapport global généré."
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/RapportGlobal'
+
   /collectivites/{collectiviteId}/activites/{activiteId}/presences:
     post:
       tags:
@@ -359,33 +383,33 @@ components:
               type: string
     NouveauMembre:
       type: object
-      required: [nom, prenoms, dateNaissance, genre, adresse, metier, telephone, email, parrainId, referencePaiement]
+      required: [ nom, prenoms, dateNaissance, genre, adresse, parrainages, referencePaiementTotal ]
       properties:
-        nom:
+        nom: { type: string }
+        prenoms: { type: string }
+        dateNaissance: { type: string, format: date }
+        genre: { type: string, enum: [ MASCULIN, FEMININ ] }
+        adresse: { type: string }
+        metier: { type: string }
+        telephone: { type: string }
+        email: { type: string, format: email }
+        parrainages:
+          type: array
+          minItems: 2
+          items:
+            $ref: '#/components/schemas/ParrainageDetail'
+          description: "Min 2 parrains confirmés. Règle: Locaux >= Externes."
+        referencePaiementTotal:
           type: string
-        prenoms:
-          type: string
-        dateNaissance:
-          type: string
-          format: date
-        genre:
-          type: string
-          enum: [MASCULIN, FEMININ]
-        adresse:
-          type: string
-        metier:
-          type: string
-        telephone:
-          type: string
-        email:
-          type: string
-          format: email
-        parrainId:
-          type: string
-          description: "ID du parrain (membre confirmé, ancienneté > 90 jours)"
-        referencePaiement:
-          type: string
-          description: "Références du paiements des 50.000 ariary"
+          description: "Référence du paiement: 50.000 Ar + Cotisation annuelle complète"
+
+    ParrainageDetail:
+      type: object
+      required: [ parrainId, natureRelation ]
+      properties:
+        parrainId: { type: string }
+        natureRelation: { type: string, example: "Famille, ami, collègue" }
+
     Cotisation:
       type: object
       required: [typeCotisation, montant, datePaiement, modePaiement]
@@ -564,3 +588,12 @@ components:
         soldeRestantDu:
           type: number
           description: "Montant des impayés (cotisations non réglées)"
+
+    RapportGlobal:
+      type: object
+      properties:
+        collectiviteId: { type: string }
+        nomCollectivite: { type: string }
+        tauxAssiduiteGlobal: { type: number, format: float }
+        pourcentageMembresAJour: { type: number, format: float }
+        nombreNouveauxAdherents: { type: integer }
