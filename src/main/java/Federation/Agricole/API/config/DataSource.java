@@ -1,4 +1,4 @@
-package org.demo.td5.config;
+package Federation.Agricole.API.config;
 
 import org.springframework.stereotype.Component;
 
