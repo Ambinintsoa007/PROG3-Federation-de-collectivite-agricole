@@ -13,7 +13,7 @@ public class Member {
     private String id;
     private  String firstName;
     private  String lastName;
-    private LocalDate birthday;
+    private LocalDate birthdate;
     private Gender gender;
     private String address;
     private String profession;
@@ -21,6 +21,7 @@ public class Member {
     private String email;
     private MemberOccupation occupation;
     private boolean isFounder;
+    private String collectivityId;
 
     public Member(){}
 }
