@@ -83,4 +83,24 @@ public class MemberRepository {
                 throw new RuntimeException(e);
         }
     }
+
+    public int countLocalReferees(String collectivityId, List<String> refereeIds) {
+        String sql = "SELECT COUNT(*) FROM member_collectivity WHERE collectivity_id = ? AND member_id = ANY(?)";
+
+        try (Connection conn = dataSource.getConnection();
+             PreparedStatement pstmt = conn.prepareStatement(sql)) {
+
+            pstmt.setString(1, collectivityId);
+            pstmt.setArray(2, conn.createArrayOf("VARCHAR", refereeIds.toArray()));
+
+            try (ResultSet rs = pstmt.executeQuery()) {
+                if (rs.next()) {
+                    return rs.getInt(1); // On renvoie le chiffre trouvé (ex: 2)
+                }
+            }
+        } catch (SQLException e) {
+            throw new RuntimeException("Error counting local referees", e);
+        }
+        return 0;
+    }
 }
