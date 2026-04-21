@@ -9,6 +9,7 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.List;
 
 @Repository
 public class MemberRepository {
@@ -61,6 +62,25 @@ public class MemberRepository {
           pstmt.executeUpdate();
         } catch (SQLException e){
             throw new RuntimeException(e);
+        }
+    }
+
+    public void saveReferees(String memberId, List<String> refereeIds) {
+        String sql = "INSERT INTO member_referees (member_id, referee_id) VALUES (?, ?)";
+
+        try (
+                Connection conn = dataSource.getConnection();
+                PreparedStatement pstmt = conn.prepareStatement(sql);
+        ){
+            for (String refereeId : refereeIds) {
+                pstmt.setString(1, memberId);
+                pstmt.setString(2, refereeId);
+                pstmt.addBatch();
+            }
+            pstmt.executeBatch();
+
+        } catch (Exception e) {
+                throw new RuntimeException(e);
         }
     }
 }
