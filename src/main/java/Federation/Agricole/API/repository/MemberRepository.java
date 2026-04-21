@@ -2,7 +2,6 @@ package Federation.Agricole.API.repository;
 
 import Federation.Agricole.API.config.DataSource;
 import Federation.Agricole.API.entity.Member;
-import Federation.Agricole.API.entity.MemberOccupation;
 import org.springframework.stereotype.Repository;
 
 import java.sql.Connection;
@@ -50,7 +49,7 @@ public class MemberRepository {
           pstmt.setString(1, member.getId());
           pstmt.setString(2, member.getFirstName());
           pstmt.setString(3, member.getLastName());
-          pstmt.setObject(4, member.getBirthday());
+          pstmt.setObject(4, member.getBirthdate());
           pstmt.setString(5, member.getGender().name());
           pstmt.setString(6, member.getAddress());
           pstmt.setString(7, member.getProfession());
@@ -102,5 +101,20 @@ public class MemberRepository {
             throw new RuntimeException("Error counting local referees", e);
         }
         return 0;
+    }
+
+    public void saveMemberCollectivity(String memberId, String collectivityId) {
+        String sql = "INSERT INTO member_collectivity (member_id, collectivity_id) VALUES (?, ?)";
+
+        try (Connection conn = dataSource.getConnection();
+             PreparedStatement pstmt = conn.prepareStatement(sql)) {
+
+            pstmt.setString(1, memberId);
+            pstmt.setString(2, collectivityId);
+            pstmt.executeUpdate();
+
+        } catch (SQLException e) {
+            throw new RuntimeException("Error saving member-collectivity link", e);
+        }
     }
 }
