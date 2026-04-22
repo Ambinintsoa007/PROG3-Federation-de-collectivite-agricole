@@ -351,6 +351,38 @@ paths:
         '404':
           description: "Membre ou collectivité introuvable."
 
+
+
+  /collectivities/{id}/identity:
+    patch:
+      summary: Attribution d'un numéro et d'un nom à une collectivité.
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                identificationNumber:
+                  type: string
+                uniqueName:
+                  type: string
+      responses:
+        '200':
+          description: Identité attribuée avec succès.
+        '403':
+          description: Interdit. Le numéro ou le nom a déjà été attribué et ne peut plus être modifié.
+        '409':
+          description: Conflit. Le nom unique existe déjà dans le système.
+        '404':
+          description: Collectivité non trouvée.
+
 components:
   schemas:
     CreationCollectivite:
