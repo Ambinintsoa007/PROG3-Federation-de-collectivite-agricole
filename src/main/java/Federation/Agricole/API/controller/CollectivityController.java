@@ -1,5 +1,6 @@
 package Federation.Agricole.API.controller;
 
+import Federation.Agricole.API.entity.CreateCollectivity;
 import Federation.Agricole.API.service.CollectivityService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -11,7 +12,6 @@ import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
-import java.util.Map;
 
 @RestController
 @RequestMapping("/collectivities")
@@ -21,21 +21,17 @@ public class CollectivityController {
     private CollectivityService collectivityService;
 
     @PostMapping
-    public ResponseEntity<?> create(@RequestBody List<Map<String, Object>> body) {
+    public ResponseEntity<?> create(@RequestBody List<CreateCollectivity> body) {
         try {
-            for (Map<String, Object> data : body) {
-
-                Map<String, String> struct = (Map<String, String>) data.get("structure");
-
-
+            for (CreateCollectivity dto : body) {
                 collectivityService.createCollectivity(
-                        (String) data.get("location"),
-                        (List<String>) data.get("members"),
-                        (boolean) data.get("federationApproval"),
-                        struct.get("president"),
-                        struct.get("vicePresident"),
-                        struct.get("treasurer"),
-                        struct.get("secretary")
+                        dto.getLocation(),
+                        dto.getMembers(),
+                        dto.isFederationApproval(),
+                        dto.getStructure().getPresident(),
+                        dto.getStructure().getVicePresident(),
+                        dto.getStructure().getTreasurer(),
+                        dto.getStructure().getSecretary()
                 );
             }
 
