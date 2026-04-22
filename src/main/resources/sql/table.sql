@@ -37,3 +37,9 @@ CREATE TABLE member_referees (
                                  referee_id VARCHAR(50) REFERENCES members(id),
                                  PRIMARY KEY (member_id, referee_id)
 );
+
+ALTER TABLE collectivities
+    ADD COLUMN identification_number VARCHAR(50);
+
+ALTER TABLE collectivities
+    ADD COLUMN unique_name VARCHAR(100) UNIQUE;

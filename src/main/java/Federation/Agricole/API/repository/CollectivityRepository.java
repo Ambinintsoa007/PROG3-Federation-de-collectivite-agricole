@@ -73,4 +73,43 @@ public class CollectivityRepository {
             dataSource.closeConnection(connection);
         }
     }
+
+    public boolean isIdentitySet(String id) {
+        String sql = "SELECT 1 FROM collectivities WHERE id = ? AND (identification_number IS NOT NULL OR unique_name IS NOT NULL);";
+        try (Connection conn = dataSource.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setString(1, id);
+            try (var rs = ps.executeQuery()) {
+                return rs.next(); // Retourne true si une ligne existe
+            }
+        } catch (SQLException e) {
+            throw new RuntimeException("Erreur lors de la vérification de l'identité", e);
+        }
+    }
+
+    public boolean existsByName(String name) {
+        String sql = "SELECT 1 FROM collectivities WHERE unique_name = ?;";
+        try (Connection conn = dataSource.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setString(1, name);
+            try (var rs = ps.executeQuery()) {
+                return rs.next();
+            }
+        } catch (SQLException e) {
+            throw new RuntimeException("Erreur lors de la vérification du nom unique", e);
+        }
+    }
+
+    public void updateIdentity(String id, String number, String name) {
+        String sql = "UPDATE collectivities SET identification_number = ?, unique_name = ? WHERE id = ?;";
+        try (Connection conn = dataSource.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setString(1, number);
+            ps.setString(2, name);
+            ps.setString(3, id);
+            ps.executeUpdate();
+        } catch (SQLException e) {
+            throw new RuntimeException("Erreur lors de la mise à jour de l'identité", e);
+        }
+    }
 }

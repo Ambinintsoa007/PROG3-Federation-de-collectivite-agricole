@@ -5,13 +5,11 @@ import Federation.Agricole.API.service.CollectivityService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.*;
 import org.springframework.http.HttpStatus;
-import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/collectivities")
@@ -47,6 +45,27 @@ public class CollectivityController {
             return ResponseEntity
                     .status(HttpStatus.INTERNAL_SERVER_ERROR)
                     .body("Erreur : " + e.getMessage());
+        }
+    }
+
+    @PatchMapping("/{id}/identity")
+    public ResponseEntity<?> patchIdentity(@PathVariable String id, @RequestBody Map<String, String> body) {
+        try {
+            String number = body.get("identificationNumber");
+            String name = body.get("uniqueName");
+
+            collectivityService.assignIdentity(id, number, name);
+
+            return ResponseEntity.ok("Identité attribuée avec succès à la collectivité " + id);
+
+        } catch (RuntimeException e) {
+
+            if (e.getMessage().contains("IMMUTABLE_ERROR")) {
+                return ResponseEntity.status(HttpStatus.FORBIDDEN).body(e.getMessage()); // 403
+            } else if (e.getMessage().contains("CONFLICT_ERROR")) {
+                return ResponseEntity.status(HttpStatus.CONFLICT).body(e.getMessage());  // 409
+            }
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
         }
     }
 

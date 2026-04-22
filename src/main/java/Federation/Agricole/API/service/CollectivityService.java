@@ -62,4 +62,17 @@ public class CollectivityService {
             throw new RuntimeException("Erreur : Le membre désigné comme " + poste + " (" + id + ") n'existe pas.");
         }
     }
+
+    public void assignIdentity(String id, String number, String name) {
+
+        if (repository.isIdentitySet(id)) {
+            throw new RuntimeException("IMMUTABLE_ERROR: Cette collectivité possède déjà un numéro et un nom.");
+        }
+
+        if (repository.existsByName(name)) {
+            throw new RuntimeException("CONFLICT_ERROR: Le nom '" + name + "' est déjà utilisé par une autre collectivité.");
+        }
+
+        repository.updateIdentity(id, number, name);
+    }
 }
