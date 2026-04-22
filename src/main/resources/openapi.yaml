@@ -355,7 +355,8 @@ paths:
 
   /collectivities/{id}/identity:
     patch:
-      summary: Attribution d'un numéro et d'un nom à une collectivité.
+      summary: Assign an identification number and a unique name to a collectivity.
+      description: This endpoint allows the federation to assign official credentials. Once set, these values are immutable and cannot be changed.
       parameters:
         - name: id
           in: path
@@ -375,13 +376,13 @@ paths:
                   type: string
       responses:
         '200':
-          description: Identité attribuée avec succès.
+          description: Identity assigned successfully.
         '403':
-          description: Interdit. Le numéro ou le nom a déjà été attribué et ne peut plus être modifié.
+          description: Forbidden. Identity already assigned and cannot be modified (Immutability Rule).
         '409':
-          description: Conflit. Le nom unique existe déjà dans le système.
+          description: Conflict. The unique name is already taken by another entity.
         '404':
-          description: Collectivité non trouvée.
+          description: Collectivity not found.
 
 components:
   schemas:
