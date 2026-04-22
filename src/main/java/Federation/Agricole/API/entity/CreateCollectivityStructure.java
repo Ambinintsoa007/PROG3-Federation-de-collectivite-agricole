@@ -1,6 +1,6 @@
 package Federation.Agricole.API.entity;
 
-public class CreateCollectivityStructureDTO {
+public class CreateCollectivityStructure {
     private String president;
     private String vicePresident;
     private String treasurer;

@@ -1,15 +1,23 @@
 package Federation.Agricole.API.service;
 
-import Federation.Agricole.API.entity.CreateCollectivityDTO;
+import Federation.Agricole.API.config.DataSource;
 import Federation.Agricole.API.repository.CollectivityRepository;
 import Federation.Agricole.API.repository.MemberRepository;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
 
 import java.util.List;
 
-public class VerificationService {
 
-    private final CollectivityRepository repository = new CollectivityRepository();
-    private final MemberRepository memberRepository = new MemberRepository();
+@Service
+public class CollectivityService {
+
+    @Autowired
+    private CollectivityRepository repository;
+
+    @Autowired
+    private MemberRepository memberRepository;
+
 
     public void createCollectivity(
             String location,

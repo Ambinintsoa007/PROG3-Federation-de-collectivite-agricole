@@ -1,13 +1,14 @@
 package Federation.Agricole.API.repository;
 
 import Federation.Agricole.API.config.DataSource;
-import Federation.Agricole.API.entity.CreateCollectivityDTO;
+import org.springframework.stereotype.Repository;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.util.List;
 
+@Repository
 public class CollectivityRepository {
 
     private final DataSource dataSource = new DataSource();

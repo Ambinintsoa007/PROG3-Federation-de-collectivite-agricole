@@ -2,13 +2,13 @@ package Federation.Agricole.API.entity;
 
 import java.util.List;
 
-public class CreateCollectivityDTO {
+public class CreateCollectivity {
     private String location;
     private List<String> members;
     private boolean federationApproval;
-    private CreateCollectivityStructureDTO structure;
+    private CreateCollectivityStructure structure;
 
-    public CreateCollectivityDTO(String location, List<String> members, boolean federationApproval, CreateCollectivityStructureDTO structure ) {
+    public CreateCollectivity(String location, List<String> members, boolean federationApproval, CreateCollectivityStructure structure ) {
         this.location = location;
         this.members = members;
         this.federationApproval = federationApproval;
@@ -39,11 +39,11 @@ public class CreateCollectivityDTO {
         this.federationApproval = federationApproval;
     }
 
-    public CreateCollectivityStructureDTO getStructure() {
+    public CreateCollectivityStructure getStructure() {
         return structure;
     }
 
-    public void setStructure(CreateCollectivityStructureDTO structure) {
+    public void setStructure(CreateCollectivityStructure structure) {
         this.structure = structure;
     }
 }
