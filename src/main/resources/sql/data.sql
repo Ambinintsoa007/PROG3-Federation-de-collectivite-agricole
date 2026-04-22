@@ -19,3 +19,13 @@ INSERT INTO member_collectivity (member_id, collectivity_id) VALUES
                                                                  ('MEMBER-002', 'COLL-001'),
                                                                  ('MEMBER-003', 'COLL-001'),
                                                                  ('MEMBER-004', 'COLL-001');
+
+
+
+INSERT INTO members (id, first_name, last_name, occupation, is_founder) VALUES
+                                                                            ('MEMBER-005', 'Soa', 'Line', 'MEMBER', false),
+                                                                            ('MEMBER-006', 'Koto', 'Bé', 'MEMBER', false),
+                                                                            ('MEMBER-007', 'Bery', 'Zery', 'MEMBER', false),
+                                                                            ('MEMBER-008', 'Lita', 'Fety', 'MEMBER', false),
+                                                                            ('MEMBER-009', 'Mamy', 'Rina', 'MEMBER', false),
+                                                                            ('MEMBER-010', 'Vola', 'Tiana', 'MEMBER', false);

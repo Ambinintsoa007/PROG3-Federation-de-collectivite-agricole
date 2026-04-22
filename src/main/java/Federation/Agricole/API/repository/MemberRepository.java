@@ -14,7 +14,7 @@ import java.util.List;
 public class MemberRepository {
     private DataSource dataSource;
 
-    public MemberRepository(DataSource dataSource) {
+    public MemberRepository() {
         this.dataSource = dataSource;
     }
 
