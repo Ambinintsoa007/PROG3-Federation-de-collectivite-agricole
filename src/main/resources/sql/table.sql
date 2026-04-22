@@ -43,3 +43,24 @@ ALTER TABLE collectivities
 
 ALTER TABLE collectivities
     ADD COLUMN unique_name VARCHAR(100) UNIQUE;
+
+CREATE TABLE membership_fees (
+                                 id VARCHAR(50) PRIMARY KEY,
+                                 collectivity_id VARCHAR(50) REFERENCES collectivities(id),
+                                 eligible_from DATE,
+                                 frequency VARCHAR(20), -- WEEKLY, MONTHLY, ANNUALLY, PUNCTUALLY
+                                 amount DECIMAL(10, 2),
+                                 label VARCHAR(255),
+                                 status VARCHAR(20) DEFAULT 'ACTIVE'
+);
+
+
+CREATE TABLE financial_accounts (
+                                    id VARCHAR(50) PRIMARY KEY,
+                                    collectivity_id VARCHAR(50) REFERENCES collectivities(id),
+                                    account_type VARCHAR(20), -- CASH, MOBILE_BANKING, BANK
+                                    amount DECIMAL(15, 2) DEFAULT 0,
+                                    holder_name VARCHAR(100),
+                                    bank_name VARCHAR(50),
+                                    mobile_number VARCHAR(20)
+);
