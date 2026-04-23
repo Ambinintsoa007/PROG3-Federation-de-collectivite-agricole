@@ -1,10 +1,12 @@
 package Federation.Agricole.API.service;
 
 import Federation.Agricole.API.dto.CreateMembershipFeeDTO;
+import Federation.Agricole.API.dto.MembershipFeeDTO;
 import Federation.Agricole.API.repository.MembershipFeeRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
 import java.util.UUID;
 
 @Service
@@ -14,6 +16,11 @@ public class MembershipFeeService {
     @Autowired
     public MembershipFeeService(MembershipFeeRepository membershipFeeRepository) {
         this.membershipFeeRepository = membershipFeeRepository;
+    }
+
+    public List<MembershipFeeDTO> getFeesByCollectivity(String collectivityId) {
+
+        return membershipFeeRepository.findByCollectivityId(collectivityId);
     }
 
     public void processAndSaveFee(String collectivityID, CreateMembershipFeeDTO dto) {
