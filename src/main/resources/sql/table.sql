@@ -65,6 +65,13 @@ CREATE TABLE financial_accounts (
                                     mobile_number VARCHAR(20)
 );
 
+CREATE TABLE documents (
+                           id VARCHAR(50) PRIMARY KEY,
+                           collectivity_id VARCHAR(50) REFERENCES collectivities(id) ON DELETE CASCADE,
+                           document_type VARCHAR(50) NOT NULL,
+                           file_path TEXT NOT NULL,
+                           upload_date DATE NOT NULL
+);
 ALTER TABLE financial_accounts
     ADD COLUMN mobile_service VARCHAR(50),
     ADD COLUMN bank_code INTEGER,
