@@ -87,3 +87,11 @@ CREATE TABLE transactions (
                               payment_mode VARCHAR(50),
                               account_id VARCHAR(50) REFERENCES financial_accounts(id)
 );
+CREATE TABLE payments (
+                          id VARCHAR(50) PRIMARY KEY,
+                          member_id VARCHAR(50) REFERENCES members(id),
+                          amount DOUBLE PRECISION NOT NULL,
+                          payment_mode VARCHAR(50),
+                          account_id VARCHAR(50) REFERENCES financial_accounts(id),
+                          creation_date DATE NOT NULL
+);
