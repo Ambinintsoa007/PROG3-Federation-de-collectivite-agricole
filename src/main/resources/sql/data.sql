@@ -29,3 +29,11 @@ INSERT INTO members (id, first_name, last_name, occupation, is_founder) VALUES
                                                                             ('MEMBER-008', 'Lita', 'Fety', 'MEMBER', false),
                                                                             ('MEMBER-009', 'Mamy', 'Rina', 'MEMBER', false),
                                                                             ('MEMBER-010', 'Vola', 'Tiana', 'MEMBER', false);
+
+INSERT INTO financial_accounts (id, collectivity_id, account_type)
+VALUES ('ACC-001', 'COLL-001', 'CASH');
+
+
+INSERT INTO transactions (id, collectivity_id, amount, creation_date, payment_mode, account_id) VALUES
+                                                                                                    ('TX-01', 'COLL-001', 50000.0, '2026-02-10', 'CASH', 'ACC-001'),
+                                                                                                    ('TX-02', 'COLL-001', 120000.0, '2026-03-15', 'MOBILE', 'ACC-001');

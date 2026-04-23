@@ -78,3 +78,12 @@ ALTER TABLE financial_accounts
     ADD COLUMN branch_code INTEGER,
     ADD COLUMN account_number BIGINT,
     ADD COLUMN account_key INTEGER;
+
+CREATE TABLE transactions (
+                              id VARCHAR(50) PRIMARY KEY,
+                              collectivity_id VARCHAR(50) REFERENCES collectivities(id),
+                              amount DOUBLE PRECISION NOT NULL,
+                              creation_date DATE NOT NULL,
+                              payment_mode VARCHAR(50),
+                              account_id VARCHAR(50) REFERENCES financial_accounts(id)
+);
