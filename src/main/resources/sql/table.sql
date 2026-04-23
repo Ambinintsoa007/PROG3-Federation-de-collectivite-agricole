@@ -64,3 +64,11 @@ CREATE TABLE financial_accounts (
                                     bank_name VARCHAR(50),
                                     mobile_number VARCHAR(20)
 );
+
+CREATE TABLE documents (
+                           id VARCHAR(50) PRIMARY KEY,
+                           collectivity_id VARCHAR(50) REFERENCES collectivities(id) ON DELETE CASCADE,
+                           document_type VARCHAR(50) NOT NULL,
+                           file_path TEXT NOT NULL,
+                           upload_date DATE NOT NULL
+);
