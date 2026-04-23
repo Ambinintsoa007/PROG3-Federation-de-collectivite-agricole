@@ -5,6 +5,9 @@ import Federation.Agricole.API.repository.AccountRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
+import java.util.Map;
+
 @Service
 public class AccountService {
 
@@ -17,5 +20,9 @@ public class AccountService {
         }
         String generatedId = "ACC-" + java.util.UUID.randomUUID().toString().substring(0, 8);
         accountRepository.save(generatedId, collectivityId, dto);
+    }
+
+    public List<Map<String, Object>> getAccountsBalanceAt(String id, String atDate) {
+        return accountRepository.findBalancesAtDate(id, atDate);
     }
 }

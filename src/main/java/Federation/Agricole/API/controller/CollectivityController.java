@@ -69,4 +69,14 @@ public class CollectivityController {
         }
     }
 
+    @GetMapping("/{id}")
+    public ResponseEntity<?> getOne(@PathVariable String id) {
+        try {
+            // Return collectivity details and the 'members' attribute as required
+            return ResponseEntity.ok(collectivityService.getFullCollectivityData(id));
+        } catch (RuntimeException e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
+        }
+    }
+
 }

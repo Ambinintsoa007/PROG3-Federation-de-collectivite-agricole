@@ -5,8 +5,12 @@ import org.springframework.stereotype.Repository;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
+import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 @Repository
 public class CollectivityRepository {
@@ -22,8 +26,8 @@ public class CollectivityRepository {
             String treasurerId,
             String secretaryId,
             List<String> memberIds
-    )   {
-    Connection connection = dataSource.getConnection();
+    ) {
+        Connection connection = dataSource.getConnection();
 
         try {
             connection.setAutoCommit(false);
@@ -111,5 +115,51 @@ public class CollectivityRepository {
         } catch (SQLException e) {
             throw new RuntimeException("Erreur lors de la mise à jour de l'identité", e);
         }
+    }
+
+    public Map<String, Object> findCollectivityWithMembers(String id) {
+        String sqlColl = "SELECT id, location, unique_name, identification_number FROM collectivities WHERE id = ?";
+        String sqlMembers = "SELECT m.id, m.first_name, m.last_name, m.occupation " +
+                "FROM members m " +
+                "JOIN member_collectivity mc ON m.id = mc.member_id " +
+                "WHERE mc.collectivity_id = ?";
+
+        Map<String, Object> result = new HashMap<>();
+
+        try (Connection conn = dataSource.getConnection()) {
+            // 1. Fetch basic collectivity details
+            try (PreparedStatement ps = conn.prepareStatement(sqlColl)) {
+                ps.setString(1, id);
+                ResultSet rs = ps.executeQuery();
+                if (rs.next()) {
+                    result.put("id", rs.getString("id"));
+                    result.put("location", rs.getString("location"));
+                    result.put("uniqueName", rs.getString("unique_name"));
+                    result.put("identificationNumber", rs.getString("identification_number"));
+                } else {
+                    return null; // Return null if collectivity doesn't exist
+                }
+            }
+
+            // 2. Fetch associated members list
+            List<Map<String, Object>> members = new ArrayList<>();
+            try (PreparedStatement ps = conn.prepareStatement(sqlMembers)) {
+                ps.setString(1, id);
+                ResultSet rs = ps.executeQuery();
+                while (rs.next()) {
+                    Map<String, Object> member = new HashMap<>();
+                    member.put("id", rs.getString("id"));
+                    member.put("firstName", rs.getString("first_name"));
+                    member.put("lastName", rs.getString("last_name"));
+                    member.put("occupation", rs.getString("occupation"));
+                    members.add(member);
+                }
+            }
+            result.put("members", members);
+
+        } catch (SQLException e) {
+            throw new RuntimeException("Database retrieval error: " + e.getMessage());
+        }
+        return result;
     }
 }

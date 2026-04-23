@@ -24,4 +24,15 @@ public class AccountController {
             return ResponseEntity.badRequest().body("Error : " + e.getMessage());
         }
     }
+
+    @GetMapping("/{id}/financialAccounts")
+    public ResponseEntity<?> getFinancialAccounts(@PathVariable String id, @RequestParam(required = false) String at) {
+        try {
+            // Use current date if 'at' parameter is missing
+            String targetDate = (at != null) ? at : java.time.LocalDate.now().toString();
+            return ResponseEntity.ok(accountService.getAccountsBalanceAt(id, targetDate));
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body("Invalid date format or request: " + e.getMessage());
+        }
+    }
 }
