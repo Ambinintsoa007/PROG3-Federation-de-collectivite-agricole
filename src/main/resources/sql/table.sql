@@ -64,3 +64,10 @@ CREATE TABLE financial_accounts (
                                     bank_name VARCHAR(50),
                                     mobile_number VARCHAR(20)
 );
+
+ALTER TABLE financial_accounts
+    ADD COLUMN mobile_service VARCHAR(50),
+    ADD COLUMN bank_code INTEGER,
+    ADD COLUMN branch_code INTEGER,
+    ADD COLUMN account_number BIGINT,
+    ADD COLUMN account_key INTEGER;

@@ -16,21 +16,12 @@ public class AccountController {
     private AccountService accountService;
 
     @PostMapping("/{id}/accounts")
-    public ResponseEntity<?> addAccount(@PathVariable String id, @RequestBody AccountDTO accountDTO) {
+    public ResponseEntity<?> addAccount(@PathVariable String id, @RequestBody AccountDTO dto) {
         try {
-            accountService.createAccount(
-                    id,
-                    accountDTO.getAccountType(),
-                    accountDTO.getHolderName(),
-                    accountDTO.getBankName(),
-                    accountDTO.getMobileNumber()
-            );
-            return ResponseEntity.status(HttpStatus.CREATED).body("Financial account created successfully.");
-        } catch (RuntimeException e) {
-            return ResponseEntity.badRequest().body(e.getMessage());
+            accountService.createAccount(id, dto);
+            return ResponseEntity.status(HttpStatus.CREATED).body("Financial account created.");
         } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Internal server error: " + e.getMessage());
-
+            return ResponseEntity.badRequest().body("Error : " + e.getMessage());
         }
     }
 }
