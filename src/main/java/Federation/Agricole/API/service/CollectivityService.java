@@ -1,94 +1,89 @@
 package Federation.Agricole.API.service;
 
+import Federation.Agricole.API.entity.*;
+import Federation.Agricole.API.exception.BadRequestException;
+import Federation.Agricole.API.exception.NotFoundException;
 import Federation.Agricole.API.repository.CollectivityRepository;
-import Federation.Agricole.API.repository.MemberRepository;
-import org.springframework.beans.factory.annotation.Autowired;
+import Federation.Agricole.API.repository.FinancialAccountRepository;
+import Federation.Agricole.API.repository.MembershipFeeRepository;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
-import java.util.Map;
+import java.util.stream.Stream;
+
+import static Federation.Agricole.API.entity.ActivityStatus.ACTIVE;
+import static java.util.UUID.randomUUID;
 
 @Service
+@RequiredArgsConstructor
 public class CollectivityService {
+    private final CollectivityRepository collectivityRepository;
+    private final MembershipFeeRepository membershipFeeRepository;
+    private final FinancialAccountRepository financialAccountRepository;
 
-    @Autowired
-    private CollectivityRepository collectivityRepository;
-
-    @Autowired
-    private MemberRepository memberRepository;
-
-    public void createCollectivity(
-            String location,
-            List<String> memberIds,
-            boolean federationApproval,
-            String presidentId,
-            String vicePresidentId,
-            String treasurerId,
-            String secretaryId
-    ) {
-        if (!federationApproval) {
-            throw new RuntimeException("Error: Federation approval is missing.");
+    public List<Collectivity> createCollectivities(List<Collectivity> collectivities) {
+        for (Collectivity collectivity : collectivities) {
+            if (!collectivity.hasEnoughMembers()) {
+                throw new BadRequestException("Collectivity must have at least 10 members, otherwise actual is " + collectivity.getMembers().size());
+            }
+            collectivity.setId(randomUUID().toString());
         }
-
-        if (memberIds == null || memberIds.size() < 10) {
-            throw new RuntimeException("Error: At least 10 members are required to open a collectivity.");
-        }
-
-        // Validate that all board members exist
-        validateExists(presidentId, "President");
-        validateExists(vicePresidentId, "Vice-President");
-        validateExists(treasurerId, "Treasurer");
-        validateExists(secretaryId, "Secretary");
-
-        String generatedId = "COLL-" + System.currentTimeMillis();
-
-        collectivityRepository.save(
-                generatedId,
-                location,
-                federationApproval,
-                presidentId,
-                vicePresidentId,
-                treasurerId,
-                secretaryId,
-                memberIds
-        );
-
-        System.out.println("Collectivity created successfully: " + generatedId);
+        return collectivityRepository.saveAll(collectivities);
     }
 
-    /**
-     * Internal validation to check if a member exists before assigning to a role.
-     */
-    private void validateExists(String id, String role) {
-        if (id == null || !memberRepository.existsById(id)) {
-            throw new RuntimeException("Error: Member designated as " + role + " (" + id + ") does not exist.");
-        }
+    public Collectivity getCollectivityById(String id) {
+        return collectivityRepository.findById(id).orElseThrow(() -> new NotFoundException("Collectivity.id= " + id + " not found"));
     }
 
-    /**
-     * Assigns a unique name and number to a collectivity (Immutable after first set).
-     */
-    public void assignIdentity(String id, String number, String name) {
-        if (collectivityRepository.isIdentitySet(id)) {
-            throw new RuntimeException("IMMUTABLE_ERROR: This collectivity already has a name and number.");
+    public Collectivity updateInformations(String collectivityId, String actualName, Integer actualNumber) {
+        Collectivity collectivity = collectivityRepository.findById(collectivityId)
+                .orElseThrow(() -> new NotFoundException("Collectivity.id= " + collectivityId + " not found"));
+        if (actualNumber != null && collectivityRepository.isNumberExists(actualNumber)) {
+            throw new BadRequestException("Collectivity.number=" + actualNumber + " already exists");
         }
-
-        if (collectivityRepository.existsByName(name)) {
-            throw new RuntimeException("CONFLICT_ERROR: The name '" + name + "' is already used.");
+        if (actualName != null && collectivityRepository.isNameExists(actualName)) {
+            throw new BadRequestException("Collectivity.name=" + actualName + " already exists");
         }
-
-        collectivityRepository.updateIdentity(id, number, name);
+        collectivity.setName(actualName);
+        collectivity.setNumber(actualNumber);
+        return collectivityRepository.saveAll(List.of((collectivity))).getFirst();
     }
 
-    /**
-     * Fetches the collectivity details including the full list of members.
-     */
-    public Map<String, Object> getFullCollectivityData(String id) {
-        // This now matches the @Autowired field name
-        Map<String, Object> data = collectivityRepository.findCollectivityWithMembers(id);
-        if (data == null) {
-            throw new RuntimeException("Collectivity not found: " + id);
+    public List<MembershipFee> getMembershipFeesByCollectivityIdentifier(String collectivityIdentifier) {
+        Collectivity collectivity = collectivityRepository.findById(collectivityIdentifier)
+                .orElseThrow(() ->
+                        new NotFoundException("Collectivity.id= " + collectivityIdentifier + " not found"));
+
+        return membershipFeeRepository.getMembershipFeesByCollectivityId(collectivity.getId());
+    }
+
+    public List<MembershipFee> createMembershipFees(String collectivityIdentifier, List<MembershipFee> membershipFees) {
+        Collectivity collectivity = collectivityRepository.findById(collectivityIdentifier)
+                .orElseThrow(() ->
+                        new NotFoundException("Collectivity.id= " + collectivityIdentifier + " not found"));
+        for (MembershipFee membershipFee : membershipFees) {
+            membershipFee.setId(randomUUID().toString());
+            membershipFee.setStatus(ACTIVE);
+            membershipFee.setCollectivityOwner(collectivity);
         }
-        return data;
+        return membershipFeeRepository.saveAll(membershipFees);
+    }
+
+    public List<FinancialAccount> getFinancialAccounts(String collectivityIdentifier) {
+        Collectivity collectivity = collectivityRepository.findById(collectivityIdentifier)
+                .orElseThrow(() ->
+                        new NotFoundException("Collectivity.id= " + collectivityIdentifier + " not found"));
+
+        CashAccount cashAccount = financialAccountRepository.getCashAccountByCollectivityId(collectivity.getId());
+        List<BankAccount> bankAccounts = financialAccountRepository.getBankAccountsByCollectivityId(collectivity.getId());
+        List<MobileBankingAccount> mobileBankingAccountsByCollectivityId = financialAccountRepository.getMobileBankingAccountsByCollectivityId(collectivity.getId());
+
+        return Stream.concat(
+                Stream.concat(
+                        Stream.of(cashAccount),
+                        bankAccounts.stream()),
+                mobileBankingAccountsByCollectivityId.stream()
+        ).toList();
     }
 }

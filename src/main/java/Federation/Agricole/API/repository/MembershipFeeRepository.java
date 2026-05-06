@@ -1,71 +1,85 @@
 package Federation.Agricole.API.repository;
 
-import Federation.Agricole.API.config.DataSource;
-import Federation.Agricole.API.dto.MembershipFeeDTO;
-import org.springframework.beans.factory.annotation.Autowired;
+import Federation.Agricole.API.entity.MembershipFee;
+import Federation.Agricole.API.mapper.MembershipFeeMapper;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Repository;
 
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
+import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 @Repository
+@RequiredArgsConstructor
 public class MembershipFeeRepository {
-    private final  DataSource dataSource;
+    private final Connection connection;
+    private final MembershipFeeMapper membershipFeeMapper;
 
-    @Autowired //spring will inject the datasource automatically here when starting
-    public MembershipFeeRepository(DataSource dataSource) {
-        this.dataSource = dataSource;
-    }
-
-    public void save(String id, String collId, String eligibleFrom, String frequency, Double amount, String label) {
-        String sql = "INSERT INTO membership_fees (id, collectivity_id, eligible_from, frequency, amount, label, status) VALUES (?, ?, ?, ?, ?, ?, 'ACTIVE')";
-
-        try(
-                Connection conn = dataSource.getConnection();
-                PreparedStatement stmt = conn.prepareStatement(sql)
-        ) {
-            stmt.setString(1, id);
-            stmt.setString(2, collId);
-            stmt.setDate(3, java.sql.Date.valueOf(eligibleFrom));
-            stmt.setString(4, frequency);
-            stmt.setDouble(5, amount);
-            stmt.setString(6, label);
-
-            stmt.executeUpdate();
-        } catch (SQLException e){
-            throw new RuntimeException( "SQL error : " + e);
-        }
-    }
-
-    public List<MembershipFeeDTO> findByCollectivityId(String collectivityId) {
-        String sql = "SELECT id, collectivity_id, eligible_from, frequency, amount, label, status " +
-                "FROM membership_fees WHERE collectivity_id = ?";
-        List<MembershipFeeDTO> fees = new ArrayList<>();
-
-        try (Connection conn = dataSource.getConnection();
-             PreparedStatement ps = conn.prepareStatement(sql)) {
-
+    public List<MembershipFee> getMembershipFeesByCollectivityId(String collectivityId) {
+        List<MembershipFee> membershipFees = new ArrayList<MembershipFee>();
+        try (PreparedStatement ps = connection.prepareStatement("""
+                select id, label, amount, frequency, status, eligible_from
+                from membership_fee where collectivity_id = ?
+                """)) {
             ps.setString(1, collectivityId);
             ResultSet rs = ps.executeQuery();
-
             while (rs.next()) {
-                fees.add(new MembershipFeeDTO(
-                        rs.getString("id"),
-                        rs.getString("collectivity_id"),
-                        rs.getDate("eligible_from").toLocalDate(),
-                        rs.getString("frequency"),
-                        rs.getDouble("amount"),
-                        rs.getString("label"),
-                        rs.getString("status")
-                ));
+                MembershipFee membershipFee = membershipFeeMapper.mapFromResultSet(rs);
+                membershipFees.add(membershipFee);
             }
+            return membershipFees;
         } catch (SQLException e) {
-            throw new RuntimeException("Erreur SQL lors de la récupération : " + e.getMessage());
+            throw new RuntimeException(e);
         }
-        return fees;
+    }
+
+    public List<MembershipFee> saveAll(List<MembershipFee> membershipFees) {
+        List<MembershipFee> membershipFeeList = new ArrayList<>();
+        try (PreparedStatement ps = connection.prepareStatement(
+                """
+                        insert into membership_fee (id, label, amount, eligible_from, status, frequency, collectivity_id)
+                        values (?, ?, ?, ?, ?::activity_status, ?::frequency,?) on conflict (id)
+                            do update set label=excluded.label,
+                                          amount=excluded.amount,
+                                          eligible_from=excluded.eligible_from,
+                                          status=excluded.status,
+                                          frequency=excluded.frequency
+                        """)) {
+            for (MembershipFee membershipFee : membershipFees) {
+                ps.setString(1, membershipFee.getId());
+                ps.setString(2, membershipFee.getLabel());
+                ps.setDouble(3, membershipFee.getAmount());
+                ps.setDate(4, Date.valueOf(membershipFee.getEligibleFrom()));
+                ps.setString(5, membershipFee.getStatus().name());
+                ps.setString(6, membershipFee.getFrequency().name());
+                ps.setString(7, membershipFee.getCollectivityOwner().getId());
+                ps.addBatch();
+            }
+            var executeBatch = ps.executeBatch();
+            for (int i = 0; i < executeBatch.length; i++) {
+                MembershipFee membershipFee = membershipFees.get(i);
+                membershipFeeList.add(findById(membershipFee.getId()).orElseThrow());
+            }
+            return membershipFeeList;
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    public Optional<MembershipFee> findById(String id) {
+        try (PreparedStatement ps = connection.prepareStatement("""
+                select id, label, amount, frequency, status, eligible_from from membership_fee where id = ?
+                """)) {
+            ps.setString(1, id);
+            ResultSet resultSet = ps.executeQuery();
+            if (resultSet.next()) {
+                MembershipFee membershipFee = membershipFeeMapper.mapFromResultSet(resultSet);
+                return Optional.of(membershipFee);
+            }
+            return Optional.empty();
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
     }
 }
