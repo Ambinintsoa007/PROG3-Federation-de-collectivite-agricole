@@ -14,7 +14,7 @@ import java.util.List;
 public class MemberRepository {
     private DataSource dataSource;
 
-    public MemberRepository() {
+    public MemberRepository(DataSource dataSource) {
         this.dataSource = dataSource;
     }
 
@@ -90,7 +90,9 @@ public class MemberRepository {
              PreparedStatement pstmt = conn.prepareStatement(sql)) {
 
             pstmt.setString(1, collectivityId);
-            pstmt.setArray(2, conn.createArrayOf("VARCHAR", refereeIds.toArray()));
+            String[] refereeArray = refereeIds.toArray(new String[0]);
+            java.sql.Array sqlArray = conn.createArrayOf("varchar", refereeArray);
+            pstmt.setArray(2, sqlArray);
 
             try (ResultSet rs = pstmt.executeQuery()) {
                 if (rs.next()) {

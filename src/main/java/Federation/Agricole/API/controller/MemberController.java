@@ -1,7 +1,6 @@
 package Federation.Agricole.API.controller;
 
 import Federation.Agricole.API.dto.MemberRequest;
-import Federation.Agricole.API.entity.Member;
 import Federation.Agricole.API.service.MemberService;
 import org.springframework.web.bind.annotation.*;
 import java.util.List;
@@ -16,14 +15,16 @@ public class MemberController {
     }
     
     @PostMapping("/members")
-    public String registerMember(@RequestBody MemberRequest  memberRequest) {
+    public String registerMember(@RequestBody List<MemberRequest>  memberRequest) {
         try {
-            memberService.createMember(
-                    memberRequest.member,
-                    memberRequest.refereeIds,
-                    memberRequest.regPaid,
-                    memberRequest.duesPaid
-            );
+            for (MemberRequest memberRequest1 : memberRequest){
+                memberService.createMember(
+                        memberRequest1.member,
+                        memberRequest1.refereeIds,
+                        memberRequest1.regPaid,
+                        memberRequest1.duesPaid
+                );
+            }
             return "Membre enregistré avec succès !";
         } catch (RuntimeException e) {
             return "Erreur : " + e.getMessage();
