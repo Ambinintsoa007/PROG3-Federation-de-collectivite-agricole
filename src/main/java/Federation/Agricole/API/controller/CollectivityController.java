@@ -1,82 +1,135 @@
 package Federation.Agricole.API.controller;
 
-import Federation.Agricole.API.entity.CreateCollectivity;
+import Federation.Agricole.API.controller.dto.CollectivityInformation;
+import Federation.Agricole.API.controller.dto.CreateCollectivity;
+import Federation.Agricole.API.controller.dto.CreateMembershipFee;
+import Federation.Agricole.API.controller.mapper.CollectivityDtoMapper;
+import Federation.Agricole.API.controller.mapper.MembershipFeeDtoMapper;
+import Federation.Agricole.API.entity.Collectivity;
+import Federation.Agricole.API.entity.Frequency;
+import Federation.Agricole.API.entity.MembershipFee;
+import Federation.Agricole.API.exception.BadRequestException;
+import Federation.Agricole.API.exception.NotFoundException;
 import Federation.Agricole.API.service.CollectivityService;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.ResponseEntity;
-import org.springframework.stereotype.Controller;
-import org.springframework.web.bind.annotation.*;
+import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
-import java.util.Map;
+
+import static org.springframework.http.HttpStatus.*;
 
 @RestController
-@RequestMapping("/collectivities")
+@RequiredArgsConstructor
 public class CollectivityController {
+    private final CollectivityDtoMapper collectivityDtoMapper;
+    private final MembershipFeeDtoMapper membershipFeeDtoMapper;
+    private final CollectivityService collectivityService;
 
-    @Autowired
-    private CollectivityService collectivityService;
-
-    @PostMapping
-    public ResponseEntity<?> create(@RequestBody List<CreateCollectivity> body) {
+    @GetMapping("/collectivities/{id}")
+    public ResponseEntity<?> getCollectivityById(@PathVariable String id) {
         try {
-            for (CreateCollectivity dto : body) {
-                collectivityService.createCollectivity(
-                        dto.getLocation(),
-                        dto.getMembers(),
-                        dto.isFederationApproval(),
-                        dto.getStructure().getPresident(),
-                        dto.getStructure().getVicePresident(),
-                        dto.getStructure().getTreasurer(),
-                        dto.getStructure().getSecretary()
-                );
-            }
-
-            return ResponseEntity
-                    .status(HttpStatus.CREATED)
-                    .body("Collectivités créées avec succès.");
-
-        } catch (RuntimeException e) {
-            return ResponseEntity
-                    .status(HttpStatus.BAD_REQUEST)
+            return ResponseEntity.status(OK).body(collectivityDtoMapper.mapToDto(collectivityService.getCollectivityById(id)));
+        } catch (BadRequestException e) {
+            return ResponseEntity.status(BAD_REQUEST)
+                    .body(e.getMessage());
+        } catch (NotFoundException e) {
+            return ResponseEntity.status(NOT_FOUND)
                     .body(e.getMessage());
         } catch (Exception e) {
-            return ResponseEntity
-                    .status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body("Erreur : " + e.getMessage());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(e.getMessage());
         }
+
     }
 
-    @PatchMapping("/{id}/identity")
-    public ResponseEntity<?> patchIdentity(@PathVariable String id, @RequestBody Map<String, String> body) {
+    @PostMapping("/collectivities")
+    public ResponseEntity<?> createCollectivity(@RequestBody List<CreateCollectivity> createCollectivities) {
         try {
-            String number = body.get("identificationNumber");
-            String name = body.get("uniqueName");
-
-            collectivityService.assignIdentity(id, number, name);
-
-            return ResponseEntity.ok("Identité attribuée avec succès à la collectivité " + id);
-
-        } catch (RuntimeException e) {
-
-            if (e.getMessage().contains("IMMUTABLE_ERROR")) {
-                return ResponseEntity.status(HttpStatus.FORBIDDEN).body(e.getMessage()); // 403
-            } else if (e.getMessage().contains("CONFLICT_ERROR")) {
-                return ResponseEntity.status(HttpStatus.CONFLICT).body(e.getMessage());  // 409
-            }
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
+            List<Collectivity> collectivities = createCollectivities.stream()
+                    .map(collectivityDtoMapper::mapToEntity)
+                    .toList();
+            return ResponseEntity.status(HttpStatus.OK)
+                    .body(collectivityService.createCollectivities(collectivities).stream()
+                            .map(collectivityDtoMapper::mapToDto)
+                            .toList());
+        } catch (
+                BadRequestException e) {
+            return ResponseEntity.status(BAD_REQUEST)
+                    .body(e.getMessage());
+        } catch (
+                NotFoundException e) {
+            return ResponseEntity.status(NOT_FOUND)
+                    .body(e.getMessage());
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(e.getMessage());
         }
     }
 
-    @GetMapping("/{id}")
-    public ResponseEntity<?> getOne(@PathVariable String id) {
+    @PutMapping("/collectivities/{id}/informations")
+    public ResponseEntity<?> updateCollectivityInformation(@PathVariable String id,
+                                                           @RequestBody CollectivityInformation collectivityInformation) {
+        String name = collectivityInformation.getName();
+        Integer number = collectivityInformation.getNumber();
         try {
-            // Return collectivity details and the 'members' attribute as required
-            return ResponseEntity.ok(collectivityService.getFullCollectivityData(id));
-        } catch (RuntimeException e) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
+            return ResponseEntity.status(OK)
+                    .body(collectivityDtoMapper.mapToDto(collectivityService.updateInformations(id, name, number)));
+        } catch (BadRequestException e) {
+            return ResponseEntity.status(BAD_REQUEST)
+                    .body(e.getMessage());
+        } catch (NotFoundException e) {
+            return ResponseEntity.status(NOT_FOUND)
+                    .body(e.getMessage());
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(e.getMessage());
         }
     }
+
+    @GetMapping("/collectivities/{id}/membershipFees")
+    public ResponseEntity<?> getCollectivityMembershipFeesByCollectivity(@PathVariable String id) {
+        try {
+            return ResponseEntity.status(OK)
+                    .body(collectivityService.getMembershipFeesByCollectivityIdentifier(id).stream()
+                            .map(membershipFeeDtoMapper::mapToDto)
+                            .toList());
+        } catch (BadRequestException e) {
+            return ResponseEntity.status(BAD_REQUEST)
+                    .body(e.getMessage());
+        } catch (NotFoundException e) {
+            return ResponseEntity.status(NOT_FOUND)
+                    .body(e.getMessage());
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(e.getMessage());
+        }
+    }
+
+    @PostMapping("/collectivities/{id}/membershipFees")
+    public ResponseEntity<?> createCollectivityMembershipFee(
+            @PathVariable String id,
+            @RequestBody List<CreateMembershipFee> membershipFees) {
+        try {
+            List<MembershipFee> membershipFeesToCreate = membershipFees.stream()
+                    .map(membershipFeeDtoMapper::mapToEntity)
+                    .toList();
+            return ResponseEntity.status(OK)
+                    .body(collectivityService.createMembershipFees(id, membershipFeesToCreate).stream()
+                            .map(membershipFeeDtoMapper::mapToDto)
+                            .toList());
+        } catch (BadRequestException e) {
+            return ResponseEntity.status(BAD_REQUEST)
+                    .body(e.getMessage());
+        } catch (NotFoundException e) {
+            return ResponseEntity.status(NOT_FOUND)
+                    .body(e.getMessage());
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(e.getMessage());
+        }
+    }
+
 
 }
