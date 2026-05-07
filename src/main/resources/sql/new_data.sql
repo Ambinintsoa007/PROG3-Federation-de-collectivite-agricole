@@ -83,3 +83,13 @@ INSERT INTO membership_fee (id, label, amount, eligible_from, status, frequency,
                                                                                                       ('F1', 'Cotisation Annuelle', 50000.00, '2026-01-01', 'ACTIVE', 'ANNUALLY', 'C1'),
                                                                                                       ('F2', 'Cotisation Mensuelle', 10000.00, '2026-01-01', 'ACTIVE', 'MONTHLY', 'C2'),
                                                                                                       ('F3', 'Cotisation Saisonniere', 30000.00, '2026-01-01', 'ACTIVE', 'ANNUALLY', 'C3');
+
+
+CREATE TABLE activities (
+                            id VARCHAR(50) PRIMARY KEY,
+                            collectivity_id VARCHAR(50) REFERENCES collectivity(id),
+                            label VARCHAR(255) NOT NULL,
+                            type VARCHAR(50) NOT NULL, -- MEETING, TRAINING, OTHER
+                            occupations VARCHAR[] NOT NULL, -- C'est ici que sont stockés ["SENIOR", "PRESIDENT"]
+                            executive_date DATE NOT NULL
+);
