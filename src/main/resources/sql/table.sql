@@ -37,3 +37,61 @@ CREATE TABLE member_referees (
                                  referee_id VARCHAR(50) REFERENCES members(id),
                                  PRIMARY KEY (member_id, referee_id)
 );
+
+ALTER TABLE collectivities
+    ADD COLUMN identification_number VARCHAR(50);
+
+ALTER TABLE collectivities
+    ADD COLUMN unique_name VARCHAR(100) UNIQUE;
+
+CREATE TABLE membership_fees (
+                                 id VARCHAR(50) PRIMARY KEY,
+                                 collectivity_id VARCHAR(50) REFERENCES collectivities(id),
+                                 eligible_from DATE,
+                                 frequency VARCHAR(20), -- WEEKLY, MONTHLY, ANNUALLY, PUNCTUALLY
+                                 amount DECIMAL(10, 2),
+                                 label VARCHAR(255),
+                                 status VARCHAR(20) DEFAULT 'ACTIVE'
+);
+
+
+CREATE TABLE financial_accounts (
+                                    id VARCHAR(50) PRIMARY KEY,
+                                    collectivity_id VARCHAR(50) REFERENCES collectivities(id),
+                                    account_type VARCHAR(20), -- CASH, MOBILE_BANKING, BANK
+                                    amount DECIMAL(15, 2) DEFAULT 0,
+                                    holder_name VARCHAR(100),
+                                    bank_name VARCHAR(50),
+                                    mobile_number VARCHAR(20)
+);
+
+CREATE TABLE documents (
+                           id VARCHAR(50) PRIMARY KEY,
+                           collectivity_id VARCHAR(50) REFERENCES collectivities(id) ON DELETE CASCADE,
+                           document_type VARCHAR(50) NOT NULL,
+                           file_path TEXT NOT NULL,
+                           upload_date DATE NOT NULL
+);
+ALTER TABLE financial_accounts
+    ADD COLUMN mobile_service VARCHAR(50),
+    ADD COLUMN bank_code INTEGER,
+    ADD COLUMN branch_code INTEGER,
+    ADD COLUMN account_number BIGINT,
+    ADD COLUMN account_key INTEGER;
+
+CREATE TABLE transactions (
+                              id VARCHAR(50) PRIMARY KEY,
+                              collectivity_id VARCHAR(50) REFERENCES collectivities(id),
+                              amount DOUBLE PRECISION NOT NULL,
+                              creation_date DATE NOT NULL,
+                              payment_mode VARCHAR(50),
+                              account_id VARCHAR(50) REFERENCES financial_accounts(id)
+);
+CREATE TABLE payments (
+                          id VARCHAR(50) PRIMARY KEY,
+                          member_id VARCHAR(50) REFERENCES members(id),
+                          amount DOUBLE PRECISION NOT NULL,
+                          payment_mode VARCHAR(50),
+                          account_id VARCHAR(50) REFERENCES financial_accounts(id),
+                          creation_date DATE NOT NULL
+);
