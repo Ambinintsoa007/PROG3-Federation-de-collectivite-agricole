@@ -105,3 +105,10 @@ ALTER TABLE activities ADD CONSTRAINT check_timing
         (executive_date IS NULL AND week_ordinal IS NOT NULL AND day_of_week IS NOT NULL)
         );
 ALTER TABLE activities ALTER COLUMN executive_date DROP NOT NULL;
+CREATE TABLE activity_attendance (
+                                     id VARCHAR(50) PRIMARY KEY,
+                                     activity_id VARCHAR(50) REFERENCES activities(id),
+                                     member_id VARCHAR(50) REFERENCES member(id),
+                                     status VARCHAR(20) NOT NULL,
+                                     UNIQUE(activity_id, member_id)
+);
