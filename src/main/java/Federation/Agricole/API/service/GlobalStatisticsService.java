@@ -1,6 +1,6 @@
 package Federation.Agricole.API.service;
 
-import Federation.Agricole.API.dto.GlobalStatisticsDTO;
+import Federation.Agricole.API.controller.dto.GlobalStatisticsDTO;
 import Federation.Agricole.API.repository.GlobalStatisticsRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
