@@ -4,9 +4,10 @@ import Federation.Agricole.API.controller.dto.CollectivityInformation;
 import Federation.Agricole.API.controller.dto.CreateCollectivity;
 import Federation.Agricole.API.controller.dto.CreateMembershipFee;
 import Federation.Agricole.API.controller.mapper.CollectivityDtoMapper;
+import Federation.Agricole.API.controller.mapper.FinancialAccountDtoMapper;
 import Federation.Agricole.API.controller.mapper.MembershipFeeDtoMapper;
+import Federation.Agricole.API.controller.mapper.TransactionDtoMapper;
 import Federation.Agricole.API.entity.Collectivity;
-import Federation.Agricole.API.entity.Frequency;
 import Federation.Agricole.API.entity.MembershipFee;
 import Federation.Agricole.API.exception.BadRequestException;
 import Federation.Agricole.API.exception.NotFoundException;
@@ -16,6 +17,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.time.LocalDate;
 import java.util.List;
 
 import static org.springframework.http.HttpStatus.*;
@@ -26,6 +28,8 @@ public class CollectivityController {
     private final CollectivityDtoMapper collectivityDtoMapper;
     private final MembershipFeeDtoMapper membershipFeeDtoMapper;
     private final CollectivityService collectivityService;
+    private final FinancialAccountDtoMapper financialAccountDtoMapper;
+    private final TransactionDtoMapper transactionDtoMapper;
 
     @GetMapping("/collectivities/{id}")
     public ResponseEntity<?> getCollectivityById(@PathVariable String id) {
@@ -131,5 +135,42 @@ public class CollectivityController {
         }
     }
 
+    @GetMapping("/collectivities/{id}/financialAccounts")
+    public ResponseEntity<?> getCollectivityFinancialAccounts(@PathVariable String id,
+                                                              @RequestParam(required = false) LocalDate at) {
+        try {
+            return ResponseEntity.status(OK)
+                    .body(collectivityService.getFinancialAccounts(id).stream()
+                            .map(financialAccount -> financialAccountDtoMapper.mapToDto(financialAccount, at))
+                            .toList());
+        } catch (BadRequestException e) {
+            return ResponseEntity.status(BAD_REQUEST)
+                    .body(e.getMessage());
+        } catch (NotFoundException e) {
+            return ResponseEntity.status(NOT_FOUND)
+                    .body(e.getMessage());
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(e.getMessage());
+        }
+    }
 
+    @GetMapping("/collectivities/{id}/transactions")
+    public ResponseEntity<?> getCollectivityTransactions(@PathVariable String id, @RequestParam LocalDate from, @RequestParam LocalDate to) {
+        try {
+            return ResponseEntity.status(OK)
+                    .body(collectivityService.getTransactionsByCollectivity(id, from, to).stream()
+                            .map(transactionDtoMapper::mapToDto)
+                            .toList());
+        } catch (BadRequestException e) {
+            return ResponseEntity.status(BAD_REQUEST)
+                    .body(e.getMessage());
+        } catch (NotFoundException e) {
+            return ResponseEntity.status(NOT_FOUND)
+                    .body(e.getMessage());
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(e.getMessage());
+        }
+    }
 }
