@@ -89,7 +89,19 @@ CREATE TABLE activities (
                             id VARCHAR(50) PRIMARY KEY,
                             collectivity_id VARCHAR(50) REFERENCES collectivity(id),
                             label VARCHAR(255) NOT NULL,
-                            type VARCHAR(50) NOT NULL, -- MEETING, TRAINING, OTHER
-                            occupations VARCHAR[] NOT NULL, -- C'est ici que sont stockés ["SENIOR", "PRESIDENT"]
+                            type VARCHAR(50) NOT NULL,
+                            occupations VARCHAR[] NOT NULL,
                             executive_date DATE NOT NULL
 );
+
+ALTER TABLE activities ALTER COLUMN executive_date DROP NOT NULL;
+
+
+ALTER TABLE activities ADD COLUMN week_ordinal INT;
+ALTER TABLE activities ADD COLUMN day_of_week VARCHAR(2);
+ALTER TABLE activities ADD CONSTRAINT check_timing
+    CHECK (
+        (executive_date IS NOT NULL AND week_ordinal IS NULL AND day_of_week IS NULL) OR
+        (executive_date IS NULL AND week_ordinal IS NOT NULL AND day_of_week IS NOT NULL)
+        );
+ALTER TABLE activities ALTER COLUMN executive_date DROP NOT NULL;
